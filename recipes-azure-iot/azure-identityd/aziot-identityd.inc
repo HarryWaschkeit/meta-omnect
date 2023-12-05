@@ -48,6 +48,15 @@ do_compile:prepend:raspberrypi3() {
     cd -
 }
 
+do_compile:prepend:tx6s-8035() {
+    # Since setting BINDGEN_EXTRA_CLANG_ARGS does not help and CC + CCFLAGS look right, we
+    # use a dirty fix to be able to compile tss-minimal with hard float.
+    # BINDGEN_EXTRA_CLANG_ARGS:raspberrypi3 = "${TUNE_CCARGS} --sysroot ${STAGING_DIR_TARGET}"
+    cd ${STAGING_DIR_TARGET}/usr/include/gnu
+    ln -sf stubs-hard.h stubs-soft.h
+    cd -
+}
+
 do_compile() {
     oe_cargo_fix_env
     export RUSTFLAGS="${RUSTFLAGS}"

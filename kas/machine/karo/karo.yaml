@@ -1,0 +1,36 @@
+# kas config file
+
+header:
+  version: 11
+
+repos:
+  ext/meta-karo-distro:
+    url: "https://github.com/karo-electronics/meta-karo-distro.git"
+    branch: kirkstone
+    commit: refs/tags/KARO-2023-05-25
+  ext/meta-karo:
+    url: "https://HarryWaschkeit@github.com/HarryWaschkeit/meta-karo.git"
+    branch: kirkstone
+    commit: refs/HEAD
+  ext/meta-freescale:
+    url: "https://github.com/Freescale/meta-freescale.git"
+    branch: kirkstone
+    commit: dfd01d7bdf87b6bda254780a35659975d2b2c66e
+    patches:
+      p001:
+        repo: "meta-omnect"
+        path: "kas/patches/meta-freescale_layerdir.patch"
+  ext/meta-freescale-distro:
+    url: "https://github.com/Freescale/meta-freescale-distro.git"
+    branch: kirkstone
+    commit: d5bbb487b2816dfc74984a78b67f7361ce404253
+  ext/meta-imx:
+    url: "https://github.com/nxp-imx/meta-imx.git"
+    branch: kirkstone-5.15.71-2.2.2
+    commit: ca68ab5d25322b51f54564275c84ab8de3c74ea6
+    layers:
+      meta-bsp:
+      meta-sdk:
+
+env:
+  ACCEPT_FSL_EULA: "0"
