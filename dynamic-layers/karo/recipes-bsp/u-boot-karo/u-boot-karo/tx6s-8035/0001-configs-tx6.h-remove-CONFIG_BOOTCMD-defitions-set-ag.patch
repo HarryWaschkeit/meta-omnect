@@ -1,0 +1,31 @@
+From a8d66d84d310eb5f9d8bc8c8bfa5e10e40ee9e3b Mon Sep 17 00:00:00 2001
+From: Harry Waschkeit <harry.waschkeit@googlemail.com>
+Date: Sat, 9 Dec 2023 00:16:40 +0100
+Subject: [PATCH 1/1] configs/tx6.h: remove CONFIG_BOOTCMD defitions set again
+ in omnect_env.h
+
+Signed-off-by: Harry Waschkeit <harry.waschkeit@googlemail.com>
+---
+ include/configs/tx6.h | 6 +-----
+ 1 file changed, 1 insertion(+), 5 deletions(-)
+
+diff --git a/include/configs/tx6.h b/include/configs/tx6.h
+index 5a0be9dc69..35fc1ce022 100644
+--- a/include/configs/tx6.h
++++ b/include/configs/tx6.h
+@@ -157,11 +157,7 @@
+ #define CONFIG_BOOTFILE			"uImage"
+ /*#define CONFIG_BOOTARGS			"init=/linuxrc console=ttymxc0,115200 ro debug panic=1"*/
+ #define CONFIG_BOOTARGS			"console=ttymxc0,115200 ro debug panic=1"
+-#ifndef CONFIG_TX6_UBOOT_MFG
+-#define CONFIG_BOOTCOMMAND		DEFAULT_BOOTCMD
+-#else
+-#define CONFIG_BOOTCOMMAND		"setenv bootcmd '" DEFAULT_BOOTCMD "';" \
+-	"env import " xstr(CONFIG_BOOTCMD_MFG_LOADADDR) ";run bootcmd_mfg"
++#ifdef CONFIG_TX6_UBOOT_MFG
+ #if (defined(CONFIG_SOC_MX6SX) || defined(CONFIG_SOC_MX6SL) || defined(CONFIG_SOC_MX6UL))
+ #define CONFIG_BOOTCMD_MFG_LOADADDR	80500000
+ #else
+-- 
+2.39.2
+
