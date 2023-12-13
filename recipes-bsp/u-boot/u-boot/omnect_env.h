@@ -23,8 +23,8 @@
     "resized-data:sw," \
     OMNECT_REQUIRED_WRITEABLE_ENV_FLAGS_EXTRA
 
-// set by classes/omnect_uboot_configure_env.bbclass
-//#define OMNECT_RELEASE_IMAGE
+/* set by classes/omnect_uboot_configure_env.bbclass */
+/*#define OMNECT_RELEASE_IMAGE */
 #ifdef OMNECT_RELEASE_IMAGE
 #define CONFIG_BOOTCOMMAND "run omnect_update_flow; reset"
 #define OMNECT_ENV_SETTINGS \
@@ -33,15 +33,15 @@
 #else
 #define CONFIG_BOOTCOMMAND "run omnect_update_flow"
 #define OMNECT_ENV_SETTINGS
-#endif //OMNECT_RELEASE
+#endif /* OMNECT_RELEASE */
 
-// set by classes/omnect_uboot_configure_env.bbclass
+/* set by classes/omnect_uboot_configure_env.bbclass */
 #define OMNECT_ENV_BOOTARGS
 
-// set by classes/omnect_uboot_configure_env.bbclass
+/* set by classes/omnect_uboot_configure_env.bbclass */
 #define OMNECT_ENV_BOOTLOADER_VERSION
 
-// u-boot part of omnect update workflow
+/* u-boot part of omnect update workflow */
 #define OMNECT_ENV_UPDATE_WORKFLOW \
     "omnect_update_flow=" \
         "printenv;env exists omnect_os_bootpart || echo \"initializing omnect_os_bootpart=2\" && setenv omnect_os_bootpart 2 && saveenv;" \
@@ -66,15 +66,15 @@
             "fi;" \
         "fi\0"
 
-// for secureboot, or forcing e.g. silent env var not to be changeable in release image
+/* for secureboot, or forcing e.g. silent env var not to be changeable in release image */
 #ifdef CONFIG_ENV_WRITEABLE_LIST
 #define CONFIG_ENV_FLAGS_LIST_STATIC \
     OMNECT_REQUIRED_WRITEABLE_ENV_FLAGS \
     OMNECT_REQUIRED_WRITEABLE_ENV_FLAGS_MACHINE
-#endif //CONFIG_ENV_WRITEABLE_LIST
+#endif /* CONFIG_ENV_WRITEABLE_LIST */
 
-// boot retry enabled, but not configured https://github.com/u-boot/u-boot/blob/master/doc/README.autoboot
+/* boot retry enabled, but not configured https://github.com/u-boot/u-boot/blob/master/doc/README.autoboot */
 #define CONFIG_BOOT_RETRY_TIME -1
 #define CONFIG_RESET_TO_RETRY
 
-#endif //omnect_env_h
+#endif /* omnect_env_h */
