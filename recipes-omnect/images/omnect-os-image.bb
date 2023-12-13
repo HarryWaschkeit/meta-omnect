@@ -87,8 +87,11 @@ ROOTFS_POSTPROCESS_COMMAND:append = " add_kernel_and_initramfs;"
 add_kernel_and_initramfs() {
     initramfs=$(readlink -f ${DEPLOY_DIR_IMAGE}/${OMNECT_INITRAMFS_IMAGE_NAME}.${OMNECT_INITRAMFS_FSTYPE})
     install -m 0644 ${initramfs} $D/boot/
-    ln -sf ${KERNEL_IMAGETYPE} $D/boot/${KERNEL_IMAGETYPE}.bin
-    ln -sf $(basename ${initramfs}) $D/boot/initramfs.${OMNECT_INITRAMFS_FSTYPE}
+    #ln -sf ${KERNEL_IMAGETYPE} $D/boot/${KERNEL_IMAGETYPE}.bin
+    #ln -sf $(basename ${initramfs}) $D/boot/initramfs.${OMNECT_INITRAMFS_FSTYPE}
+    # FIXME: old u-boot cannot handle symbolic links so copy as crude hack!
+    cp $D/boot/${KERNEL_IMAGETYPE}-* $D/boot/${KERNEL_IMAGETYPE}.bin
+    cp ${initramfs} $D/boot/initramfs.${OMNECT_INITRAMFS_FSTYPE}
 }
 
 # setup omnect specific sysctl configuration (see systemd-sysctl.service)
