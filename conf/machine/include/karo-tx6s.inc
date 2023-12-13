@@ -23,23 +23,29 @@ OMNECT_INITRAMFS_FSTYPE = "cpio.gz.u-boot"
 # Set Serial console
 SERIAL_CONSOLES ="${@bb.utils.contains('OMNECT_RELEASE_IMAGE', '1', '', '115200;ttymxc2', d)}"
 #bootargs console is not part of the devictree, so we have to append it to kernel commandline
-APPEND += "console=ttymxc2,115200"
+APPEND += "console=ttymxc0,115200 uboot=/dev/mmcblk0boot0"
 
 # u-boot boot.scr config
-KERNEL_BOOTCMD = "booti"
+KERNEL_BOOTCMD = "bootz"
 UBOOT_ARCH = "arm"
 UBOOT_FDT_ADDR = "fdt_addr"
-UBOOT_FDT_LOAD = "1"
+UBOOT_FDT_LOAD = "0"
 
 # redundant u-boot env
 # This is currently preset by meta-phytec, because we use u-boot-imx instead
 # of our patched u-boot here.
-OMNECT_PART_OFFSET_UBOOT_ENV1 = "3840"
-OMNECT_PART_OFFSET_UBOOT_ENV2 = "3968"
-OMNECT_PART_SIZE_UBOOT_ENV = "64"
+OMNECT_PART_OFFSET_UBOOT_ENV1 = "896"
+#OMNECT_PART_OFFSET_UBOOT_ENV2 = "1024"
+OMNECT_PART_OFFSET_UBOOT_ENV2 = ""
+OMNECT_PART_SPARE2 = ""
+OMNECT_PART_SIZE_UBOOT_ENV = "128"
 
 # no graphics for TX6
 BBMASK:append = " meta-karo-distro/recipes-graphics/wayland/weston_10.0.0.imx.bbappend"
+# don't want karo busybox settings
+BBMASK:append = " meta-karo-distro/recipes-core/busybox/busybox_%.bbappend"
+# need /var/log which gets deleted here
+BBMASK:append = " meta-karo-distro/recipes-core/base-files/base-files_%.bbappend"
 
 # mask otherwise we can not use the latest meta-freescale/meta-imx commits
 BBMASK:append = " meta-imx/meta-bsp/recipes-support/opencv/opencv_4.6.0.imx.bb"
@@ -66,3 +72,6 @@ MACHINE_FEATURES:remove = " \
     nxp8987 \
     optee \
 "
+#KERNEL_FEATURES:append = " netfilter.cfg docker.cfg lxc.cfg enable-cifs.cfg disable-kvm.cfg lxc.cfg wireguard.cfg enable-overlayfs.cfg"
+
+KERNEL_FEATURES:remove = "systemd.cfg ipv6.cfg"
