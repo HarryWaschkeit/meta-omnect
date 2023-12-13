@@ -12,16 +12,16 @@ python create_boot_cmd () {
     omnect_initramfs_fs_type=d.getVar("OMNECT_INITRAMFS_FSTYPE")
     omnect_boot_scr_test_cmds=d.getVar("OMNECT_BOOT_SCR_TEST_CMDS")
 
-    # possibly load device tree from file
+    # possibly load device tree from file on FAT32 partition
     if fdt_load:
         try:
             with open(fdt_load_script_file, "w") as f:
                 f.write("\n")
                 f.write("echo \"Loading Device Tree: boot/%s\"\n" % (device_tree))
-                f.write("load ${devtype} ${devnum}:${omnect_os_bootpart} ${%s} boot/%s\n" % (fdt_addr,device_tree))
+                f.write("fatload ${devtype} ${devnum}:${omnect_os_bootpart} ${%s} boot/%s\n" % (fdt_addr,device_tree))
                 f.write("fdt addr ${%s}\n" % fdt_addr)
                 # possibly load overlays
-                f.write("fdt resize; for i in ${overlays}; do; load ${devtype} ${devnum}:${omnect_os_bootpart} ${fdto_addr} /boot/${i}; fdt apply ${fdto_addr};done")
+                f.write("fdt resize; for i in ${overlays}; do; fatload ${devtype} ${devnum}:${omnect_os_bootpart} ${fdto_addr} /boot/${i}; fdt apply ${fdto_addr};done")
 
         except OSError:
             bb.fatal("Unable to open fdt-load.cmd")
@@ -41,15 +41,15 @@ python create_boot_cmd () {
             if omnect_boot_scr_test_cmds:
                 f.write("%s\n" % (omnect_boot_scr_test_cmds))
 
-            # load kernel
-            f.write("load ${devtype} ${devnum}:${omnect_os_bootpart} ${kernel_addr_r} boot/%s.bin\n" % kernel_imagetype)
+            # load kernel from EXT4 partition
+            f.write("ext2load ${devtype} ${devnum}:${omnect_os_bootpart} ${kernel_addr_r} boot/%s.bin && " % kernel_imagetype)
 
-            # load initrd
-            f.write("load ${devtype} ${devnum}:${omnect_os_bootpart} ${ramdisk_addr_r} boot/initramfs.%s\n" % omnect_initramfs_fs_type)
+            # load initrd from EXT4 partition
+            f.write("ext2load ${devtype} ${devnum}:${omnect_os_bootpart} ${ramdisk_addr_r} boot/initramfs.%s && " % omnect_initramfs_fs_type)
 
             # assemble bootargs: from device tree + omnect-bootargs + extra-bootargs
-            f.write("fdt get value bootargs /chosen bootargs\n")
-            f.write("setenv bootargs \"root=/dev/${devtype}blk${devnum}p${omnect_os_bootpart} ${bootargs} ${omnect-bootargs} ${extra-bootargs}\"\n")
+            f.write("if fdt get value bootargs /chosen bootargs; then true; else true; fi && ")
+            f.write("setenv bootargs \"root=/dev/${devtype}blk${devnum}p${omnect_os_bootpart} ${bootargs} ${omnect-bootargs} ${extra-bootargs}\" && ")
 
             # boot
             f.write("%s ${kernel_addr_r} ${ramdisk_addr_r} ${%s}\n" % (boot_cmd, fdt_addr))
