@@ -9,7 +9,7 @@ repos:
     branch: kirkstone
     commit: refs/tags/KARO-2023-05-25
   ext/meta-karo:
-    url: "https://github.com/HarryWaschkeit/meta-karo.git"
+    url: "git://github.com/HarryWaschkeit/meta-karo.git"
     branch: kirkstone
     commit: refs/HEAD
   ext/meta-freescale:
