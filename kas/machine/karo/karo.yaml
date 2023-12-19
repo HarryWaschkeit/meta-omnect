@@ -10,7 +10,7 @@ repos:
     commit: refs/tags/KARO-2023-05-25
   ext/meta-karo:
     url: "git@github.com:HarryWaschkeit/meta-karo.git"
-    branch: kirkstone
+    branch: hwt-dehndetect
     commit: refs/HEAD
   ext/meta-freescale:
     url: "https://github.com/Freescale/meta-freescale.git"
