@@ -11,7 +11,7 @@ LIC_FILES_CHKSUM = "\
 
 SRC_URI = "file://sw-description"
 
-COMPATIBLE_MACHINE = "rpi|phytec-imx8mm|omnect_grub"
+COMPATIBLE_MACHINE = "rpi|phytec-imx8mm|tx6s-8035|omnect_grub"
 
 # needed to get access to PKGV
 DEPENDS += "virtual/bootloader"
