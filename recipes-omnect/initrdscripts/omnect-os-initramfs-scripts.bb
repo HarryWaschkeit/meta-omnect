@@ -9,6 +9,7 @@ LIC_FILES_CHKSUM = "\
 SRC_URI = "\
     file://rootblk-dev \
     file://common-sh \
+    file://shell \
     file://factory-reset \
     file://flash-mode-1 \
     file://fs-mount \
@@ -20,13 +21,15 @@ SRC_URI:append = "${@bb.utils.contains('DISTRO_FEATURES', 'resize-data', ' file:
 SRC_URI:append = "${@bb.utils.contains('DISTRO_FEATURES', 'persistent-var-log', ' file://persistent-var-log', '', d)}"
 SRC_URI:append:mx8mm-nxp-bsp = " file://imx-sdma"
 SRC_URI:append:omnect_grub = " file://grub-sh"
-SRC_URI:append:omnect_uboot = " file://uboot-sh"
+SRC_URI:append:omnect_uboot = " file://uboot-sh file://ubootblk-dev"
+SRC_URI:append:tx6s-8035 = " file://swapfile file://imx-sdma"
 
 RDEPENDS:${PN} = "bash"
 
 do_install() {
     install -m 0755 -D ${WORKDIR}/common-sh              ${D}/init.d/05-common_sh
     install -m 0755 -D ${WORKDIR}/rootblk-dev            ${D}/init.d/10-rootblk_dev
+    install -m 0755 -D ${WORKDIR}/shell                  ${D}/init.d/15-shell
 
     install -m 0755 -D ${WORKDIR}/factory-reset          ${D}/init.d/86-factory_reset
 
@@ -60,7 +63,7 @@ do_install() {
 }
 
 do_install:append:mx8mm-nxp-bsp () {
-    install -m 0755 -D ${WORKDIR}/imx-sdma               ${D}/init.d/90-imx_sdma
+    install -m 0755 -D ${WORKDIR}/imx-sdma           ${D}/init.d/90-imx_sdma
 }
 
 do_install:append:omnect_grub () {
@@ -68,13 +71,20 @@ do_install:append:omnect_grub () {
 }
 
 do_install:append:omnect_uboot () {
+    install -m 0755 -D ${WORKDIR}/ubootblk-dev       ${D}/init.d/11-ubootblk_dev
     install -m 0755 -D ${WORKDIR}/uboot-sh           ${D}/init.d/11-bootloader_sh
+}
+
+do_install:append:tx6s-8035 () {
+    install -m 0755 -D ${WORKDIR}/imx-sdma           ${D}/init.d/90-imx_sdma
+    install -m 0755 -D ${WORKDIR}/swapfile           ${D}/init.d/91-swapfile
 }
 
 FILES:${PN} = "\
     /init.d/05-common_sh \
     /init.d/10-rootblk_dev \
     /init.d/11-bootloader_sh \
+    /init.d/15-shell \
     /init.d/86-factory_reset \
     /init.d/87-flash_mode_1 \
     /init.d/89-fs_mount \
@@ -85,3 +95,5 @@ FILES:${PN}:append = "${@bb.utils.contains('DISTRO_FEATURES', 'flash-mode-3', ' 
 FILES:${PN}:append = "${@bb.utils.contains('DISTRO_FEATURES', 'resize-data', ' /init.d/88-resize_data', '', d)}"
 FILES:${PN}:append = "${@bb.utils.contains('DISTRO_FEATURES', 'persistent-var-log', ' /init.d/90-persistent_var_log', '', d)}"
 FILES:${PN}:append:mx8mm-nxp-bsp = " /init.d/90-imx_sdma"
+FILES:${PN}:append:omnect_uboot = " /init.d/11-ubootblk_dev"
+FILES:${PN}:append:tx6s-8035 = " /init.d/90-imx_sdma /init.d/91-swapfile"

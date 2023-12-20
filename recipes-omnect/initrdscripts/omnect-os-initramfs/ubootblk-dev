@@ -1,0 +1,40 @@
+#!/bin/sh
+
+ubootblk_dev_enabled() {
+    return 0
+}
+
+ubootblk_dev_generate_dev_omnect() {
+    [ -z "${bootparam_uboot}" ] && msg "no ubot device set" && return 1
+
+    # waiting for uboot device to show up, e.g. needed by welotec boot from usb
+    while [ ! -b "${bootparam_uboot}" ]; do
+        debug "waiting for root=${bootparam_uboot}"
+        sleep 0.1
+    done
+
+    mkdir -p /dev/omnect
+    cd /dev/omnect
+
+    ubootblk=${bootparam_uboot}
+    ubootblk=${ubootblk##*/}
+
+    if [ ! -b /dev/${ubootblk} ]; then
+        if [ ! -b /dev/${ubootblk} ]; then
+            msg_fatal "failed to detect uboot blk device [/dev/${ubootblk}]" && return 1
+        fi
+    fi
+
+    debug ubootblk=${ubootblk}
+
+    ln -sf /dev/${ubootblk} ubootblk
+
+    return 0
+}
+
+ubootblk_dev_run() {
+    add_module_post_hook on_exit
+    msg "$(grep ^PRETTY_NAME= /etc/os-release | cut -d= -f2) initramfs"
+    ubootblk_dev_generate_dev_omnect
+    return=${?}
+}
