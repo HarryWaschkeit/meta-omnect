@@ -85,12 +85,12 @@ index 7bcdf37619..2879ed1a4a 100644
 +			"run scan_boot_script;" \
 +		"fi\0" \
 +	"fdt_addr=0x11000000\0" \
-+	"fdto_addr=0x11080000\0" \
++	"fdto_addr=0x11100000\0" \
 +	"kernel_addr_r=18000000\0" \
 +	"pxefile_addr_r=0x11800000\0" \
 +	"ramdisk_addr_r=0x11200000\0" \
 +	"scan_boot_script=if test -e mmc ${devnum}:1 /boot.scr; then echo Found U-Boot script; run boot_script; echo SCRIPT FAILED: continuing...; fi\0" \
-+	"script_addr_r=0x11100000\0" \
++	"script_addr_r=0x11080000\0" \
 +	OMNECT_ENV_UPDATE_WORKFLOW \
 +	OMNECT_ENV_SETTINGS \
 +	OMNECT_ENV_BOOTLOADER_VERSION \
