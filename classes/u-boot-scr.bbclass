@@ -18,10 +18,10 @@ python create_boot_cmd () {
             with open(fdt_load_script_file, "w") as f:
                 f.write("\n")
                 f.write("echo \"Loading Device Tree: boot/%s\"\n" % (device_tree))
-                f.write("fatload ${devtype} ${devnum}:${omnect_os_bootpart} ${%s} boot/%s\n" % (fdt_addr,device_tree))
+                f.write("ext2load ${devtype} ${devnum}:${omnect_os_bootpart} ${%s} boot/%s\n" % (fdt_addr,device_tree))
                 f.write("fdt addr ${%s}\n" % fdt_addr)
                 # possibly load overlays
-                f.write("fdt resize; for i in ${overlays}; do; fatload ${devtype} ${devnum}:${omnect_os_bootpart} ${fdto_addr} /boot/${i}; fdt apply ${fdto_addr};done")
+                f.write("fdt resize; for i in ${overlays}; do; ext2load ${devtype} ${devnum}:${omnect_os_bootpart} ${fdto_addr} /boot/${i}; fdt apply ${fdto_addr};done")
 
         except OSError:
             bb.fatal("Unable to open fdt-load.cmd")
