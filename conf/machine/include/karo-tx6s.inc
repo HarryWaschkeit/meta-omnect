@@ -14,7 +14,7 @@ IMAGE_BOOT_FILES:remove:pn-omnect-os-image = " \
     oftree \
     bootenv.txt \
 "
-IMAGE_INSTALL:append:pn-omnect-os-image = " kernel-devicetree"
+IMAGE_INSTALL:append:pn-omnect-os-image = " kernel-devicetree dehndetect-udev"
 # Todo add 'oftree' to rootfs?
 
 # initramfs type
@@ -44,6 +44,8 @@ OMNECT_PART_SIZE_UBOOT_ENV = "128"
 BBMASK:append = " meta-karo-distro/recipes-graphics/wayland/weston_10.0.0.imx.bbappend"
 # don't want karo busybox settings
 BBMASK:append = " meta-karo-distro/recipes-core/busybox/busybox_%.bbappend"
+# prevent karo distro from completely stripping down coreutils
+BBMASK:append = " meta-karo-distro/recipes-karo-minimal/recipes-core/coreutils/coreutils_%.bbappend"
 # need /var/log which gets deleted here
 BBMASK:append = " meta-karo-distro/recipes-core/base-files/base-files_%.bbappend"
 
@@ -52,7 +54,7 @@ BBMASK:append = " meta-imx/meta-bsp/recipes-support/opencv/opencv_4.6.0.imx.bb"
 BBMASK:append = " meta-imx/meta-sdk/dynamic-layers/openembedded-layer/recipes-multimedia/dvb-apps/dvb-apps_%.bbappend"
 
 # fix search path
-FILESEXTRAPATHS:prepend:pn-imx-boot-phytec := "${LAYERDIR_freescale-layer}/recipes-bsp/imx-mkimage/files:"
+FILESEXTRAPATHS:prepend:pn-imx-boot-karo := "${LAYERDIR_freescale-layer}/recipes-bsp/imx-mkimage/files:"
 
 # configure hardware watchdog
 # the maximum watchdog deadline depends on the hardware capabilities
