@@ -8,6 +8,11 @@ SOC_PREFIX = "tx6s"
 # don't install imx-m4-demos
 MACHINE_EXTRA_RRECOMMENDS:remove = "imx-m4-demos"
 
+# don't install unnecessary VPU firmware
+MACHINE_ESSENTIAL_EXTRA_RDEPENDS:remove = "firmware-imx-vpu-mx6dl"
+
+#SERIAL_CONSOLES = "115200;ttymxc0
+
 # install kernel-devicetree to 'root' partition instead of 'boot'
 IMAGE_BOOT_FILES:remove:pn-omnect-os-image = " \
     ${KERNEL_DEVICETREE_FN} \
