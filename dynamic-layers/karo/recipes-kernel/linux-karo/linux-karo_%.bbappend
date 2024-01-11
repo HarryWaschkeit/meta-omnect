@@ -10,10 +10,10 @@ FILESEXTRAPATHS:prepend := "${THISDIR}/files:"
 #	file://lxc.cfg \
 #	file://wireguard.cfg \
 #	file://enable-overlayfs.cfg \
+#	file://defconfig \
 #"
 SRC_URI += " \
 	file://0001-imx6qdl.dtsi-make-usdhc4-mmc0.patch \
-	file://defconfig \
 "
 
 #ADD_KERNEL_FEATURES = "netfilter.cfg docker.cfg lxc.cfg enable-cifs.cfg disable-kvm.cfg lxc.cfg wireguard.cfg enable-overlayfs.cfg"
