@@ -11,7 +11,7 @@ LIC_FILES_CHKSUM = "\
 
 SRC_URI = "file://sw-description"
 
-COMPATIBLE_MACHINE = "rpi|phytec-imx8mm|omnect_grub"
+COMPATIBLE_MACHINE = "rpi|phytec-imx8mm|tx6s-8035|omnect_grub"
 
 # needed to get access to PKGV
 DEPENDS += "virtual/bootloader"
@@ -47,6 +47,10 @@ do_bootloader_package:phytec-imx8mm() {
     tar -czvf boot-partition-update.tar.gz -C ${DEPLOY_DIR_IMAGE} boot.scr fdt-load.scr
 }
 
+do_bootloader_package:tx6s-8035() {
+    tar -czvf boot-partition-update.tar.gz -C ${DEPLOY_DIR_IMAGE} boot.scr fdt-load.scr
+}
+
 do_bootloader_package:omnect_grub() {
     mkdir -p ${WORKDIR}/EFI/BOOT
     cp ${DEPLOY_DIR_IMAGE}/grub-efi-bootx64.efi ${WORKDIR}/EFI/BOOT/bootx64.efi
@@ -70,6 +74,7 @@ IMAGE_NAME = "${DISTRO_NAME}_${DISTRO_VERSION}_${MACHINE}"
 # images and files that will be included in the .swu image
 SWUPDATE_IMAGES = "omnect-os boot-partition-update"
 SWUPDATE_IMAGES:append:phytec-imx8mm = " imx-boot"
+#SWUPDATE_IMAGES:append:tx6s-8035 = " imx-boot"
 
 
 SWUPDATE_IMAGES_FSTYPES[omnect-os] = ".ext4.gz"

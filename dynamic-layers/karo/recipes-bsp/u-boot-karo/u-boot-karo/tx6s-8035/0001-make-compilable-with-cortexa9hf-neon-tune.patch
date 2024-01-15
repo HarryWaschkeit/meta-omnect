@@ -1,0 +1,42 @@
+From f36d5b1431d5c5837a7299ab1552c48e3c0d37bf Mon Sep 17 00:00:00 2001
+From: Kas User <kas@example.com>
+Date: Fri, 1 Dec 2023 09:32:48 +0000
+Subject: [PATCH 1/1] make compilable with cortexa9hf-neon tune
+
+Signed-off-by: Kas User <kas@example.com>
+---
+ arch/arm/Makefile  | 2 +-
+ arch/arm/config.mk | 3 ++-
+ 2 files changed, 3 insertions(+), 2 deletions(-)
+
+diff --git a/arch/arm/Makefile b/arch/arm/Makefile
+index b2e6e46756..013ed46ec7 100644
+--- a/arch/arm/Makefile
++++ b/arch/arm/Makefile
+@@ -16,7 +16,7 @@ arch-$(CONFIG_CPU_SA1100)	=-march=armv4
+ arch-$(CONFIG_CPU_PXA)		=
+ arch-$(CONFIG_CPU_ARM1136)	=-march=armv5
+ arch-$(CONFIG_CPU_ARM1176)	=-march=armv5t
+-arch-$(CONFIG_CPU_V7)		=$(call cc-option, -march=armv7-a, -march=armv5)
++arch-$(CONFIG_CPU_V7)		= #$(call cc-option, -march=armv7-a, -march=armv5)
+ arch-$(CONFIG_ARM64)		=-march=armv8-a
+ 
+ # Evaluate arch cc-option calls now
+diff --git a/arch/arm/config.mk b/arch/arm/config.mk
+index db54b6dcea..4b29126283 100644
+--- a/arch/arm/config.mk
++++ b/arch/arm/config.mk
+@@ -16,8 +16,9 @@ endif
+ LDFLAGS_FINAL += --gc-sections
+ PLATFORM_RELFLAGS += -ffunction-sections -fdata-sections \
+ 		     -fno-common -ffixed-r9
+-PLATFORM_RELFLAGS += $(call cc-option, -msoft-float) \
++#PLATFORM_RELFLAGS += $(call cc-option, -msoft-float) \
+       $(call cc-option,-mshort-load-bytes,$(call cc-option,-malignment-traps,))
++PLATFORM_RELFLAGS += $(call cc-option,-mshort-load-bytes,$(call cc-option,-malignment-traps,))
+ 
+ PLATFORM_CPPFLAGS += -D__ARM__
+ 
+-- 
+2.39.2
+

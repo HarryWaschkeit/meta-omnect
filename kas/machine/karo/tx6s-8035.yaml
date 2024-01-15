@@ -1,0 +1,8 @@
+# kas config file
+
+header:
+  version: 11
+  includes:
+    - kas/machine/karo/karo.yaml
+
+machine: tx6s-8035

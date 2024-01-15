@@ -1,0 +1,348 @@
+diff -urN orig/board/karo/tx6/Kconfig work/board/karo/tx6/Kconfig
+--- orig/board/karo/tx6/Kconfig	2016-10-28 11:51:38.818012000 +0200
++++ work/board/karo/tx6/Kconfig	2016-10-28 12:19:51.622012000 +0200
+@@ -64,6 +64,9 @@
+ #
+ # variables selected depending on module variant
+ #
++config SYS_I2C_MXC_I2C3
++	bool "enable I2C bus 3"
++
+ config SYS_LVDS_IF
+ 	bool
+ 
+@@ -90,6 +93,7 @@
+ 	select SOC_MX6Q
+ 	select SYS_I2C
+ 	select SYS_I2C_MXC
++	select SYS_I2C_MXC_I2C3
+ 	select TX6_EMMC
+ 
+ config TARGET_TX6S_NAND
+@@ -103,6 +107,7 @@
+ 	select SOC_MX6S
+ 	select SYS_I2C
+ 	select SYS_I2C_MXC
++	select SYS_I2C_MXC_I2C3
+ 	select TX6_EMMC
+ 
+ config TARGET_TX6U_NAND
+@@ -116,6 +121,7 @@
+ 	select SOC_MX6DL
+ 	select SYS_I2C
+ 	select SYS_I2C_MXC
++	select SYS_I2C_MXC_I2C3
+ 	select TX6_EMMC
+ 
+ config TARGET_TX6UL_NAND
+@@ -132,6 +138,7 @@
+ 	select SOC_MX6Q
+ 	select SYS_I2C
+ 	select SYS_I2C_MXC
++	select SYS_I2C_MXC_I2C3
+ 	select TX6_EMMC
+ 	select TX6QP
+ 
+diff -urN orig/board/karo/tx6/tx6qdl.c work/board/karo/tx6/tx6qdl.c
+--- orig/board/karo/tx6/tx6qdl.c	2016-10-28 11:51:38.818012000 +0200
++++ work/board/karo/tx6/tx6qdl.c	2017-07-05 10:40:03.509188042 +0200
+@@ -10,7 +10,7 @@
+ #include <fdt_support.h>
+ #include <lcd.h>
+ #include <netdev.h>
+-#include <mmc.h>
++#include <mmc.h> 
+ #include <fsl_esdhc.h>
+ #include <video_fb.h>
+ #include <ipu.h>
+@@ -302,6 +302,9 @@
+ 		printf("unknown");
+ 
+ 	printf("\n");
++	
++	// Treat WDOG like POR: total init of all components
++	wrsr &= ~WRSR_TOUT;
+ }
+ 
+ static const char __data *tx6_mod_suffix;
+@@ -857,6 +860,31 @@
+ 	MX6_PAD_GPIO_8__GPIO1_IO08 | TX6_GPIO_PAD_CTRL, /* OC */
+ };
+ 
++static const iomux_v3_cfg_t bms_pads[] = {
++	/* SW controlled LED on STK5 baseboard */
++	MX6_PAD_EIM_A18__GPIO2_IO20 | TX6_GPIO_PAD_CTRL,
++	MX6_PAD_EIM_EB3__GPIO2_IO31 | TX6_GPIO_PAD_CTRL, /* user led_g */
++	MX6_PAD_EIM_A17__GPIO2_IO21 | TX6_GPIO_PAD_CTRL, /* user led_y */
++	MX6_PAD_EIM_D29__GPIO3_IO29 | TX6_GPIO_PAD_CTRL, /* user led_r */
++			
++	/* Event Inputs */
++	MX6_PAD_EIM_D26__GPIO3_IO26 | TX6_GPIO_PAD_CTRL, /* Pwr Fail Int */
++	MX6_PAD_EIM_D27__GPIO3_IO27 | TX6_GPIO_PAD_CTRL, /* Trigger Int */
++	MX6_PAD_EIM_A16__GPIO2_IO22 | TX6_GPIO_PAD_CTRL, /* User Key */	
++
++	/* I2C bus on DIMM pins 40/41 */
++	MX6_PAD_GPIO_6__I2C3_SDA | TX6_I2C_PAD_CTRL,
++	MX6_PAD_GPIO_3__I2C3_SCL | TX6_I2C_PAD_CTRL,
++
++	/* USBH1 */
++	MX6_PAD_EIM_D31__GPIO3_IO31 | TX6_GPIO_PAD_CTRL, /* VBUSEN */
++	MX6_PAD_EIM_D30__GPIO3_IO30 | TX6_GPIO_PAD_CTRL, /* OC */
++	/* USBOTG */
++	MX6_PAD_EIM_D23__GPIO3_IO23 | TX6_GPIO_PAD_CTRL, /* USBOTG ID */
++	MX6_PAD_GPIO_7__GPIO1_IO07 | TX6_GPIO_PAD_CTRL, /* VBUSEN */
++	MX6_PAD_GPIO_8__GPIO1_IO08 | TX6_GPIO_PAD_CTRL, /* OC */
++};
++
+ static const struct gpio stk5_gpios[] = {
+ 	{ TX6_LED_GPIO, GPIOFLAG_OUTPUT_INIT_LOW, "HEARTBEAT LED", },
+ 
+@@ -867,6 +895,23 @@
+ 	{ IMX_GPIO_NR(3, 31), GPIOFLAG_OUTPUT_INIT_LOW, "USBH1 VBUS enable", },
+ };
+ 
++static const struct gpio bms_gpios[] = {
++	{ TX6_LED_GPIO, GPIOFLAG_OUTPUT_INIT_LOW, "HEARTBEAT LED", },
++	{ IMX_GPIO_NR(2, 31), GPIOFLAG_OUTPUT_INIT_LOW, "User Led_g", },
++	{ IMX_GPIO_NR(2, 21), GPIOFLAG_OUTPUT_INIT_LOW, "User Led_y", },
++	{ IMX_GPIO_NR(3, 29), GPIOFLAG_OUTPUT_INIT_LOW, "User Led_r", },
++	
++	{ IMX_GPIO_NR(3, 26), GPIOFLAG_INPUT, "Pwr Fail Int", },
++	{ IMX_GPIO_NR(3, 27), GPIOFLAG_INPUT, "Trigger Int", },
++	{ IMX_GPIO_NR(2, 22), GPIOFLAG_INPUT, "User Key", },	
++
++	{ IMX_GPIO_NR(3, 23), GPIOFLAG_INPUT, "USBOTG ID", },
++	{ IMX_GPIO_NR(1, 8), GPIOFLAG_INPUT, "USBOTG OC", },
++	{ IMX_GPIO_NR(1, 7), GPIOFLAG_OUTPUT_INIT_LOW, "USBOTG VBUS enable", },
++	{ IMX_GPIO_NR(3, 30), GPIOFLAG_INPUT, "USBH1 OC", },
++	{ IMX_GPIO_NR(3, 31), GPIOFLAG_OUTPUT_INIT_LOW, "USBH1 VBUS enable", },
++};
++
+ #ifdef CONFIG_LCD
+ vidinfo_t panel_info = {
+ 	/* set to max. size supported by SoC */
+@@ -1426,6 +1471,18 @@
+ 			TX6_GPIO_PAD_CTRL);
+ }
+ 
++static void bms_board_init(void)
++{
++	int ret;
++
++	ret = gpio_request_array(bms_gpios, ARRAY_SIZE(bms_gpios));
++	if (ret < 0) {
++		printf("Failed to request gpios: %d\n", ret);
++		return;
++	}
++	imx_iomux_v3_setup_multiple_pads(bms_pads, ARRAY_SIZE(bms_pads));
++}
++
+ static void tx6qdl_set_cpu_clock(void)
+ {
+ 	unsigned long cpu_clk = getenv_ulong("cpu_clk", 10, 0);
+@@ -1490,6 +1547,8 @@
+ 			printf("WARNING: Unsupported STK5 board rev.: %s\n",
+ 				baseboard + 4);
+ 		}
++	} else if (strncmp(baseboard, "Dehn_BMS", 8) == 0) {
++		bms_board_init();
+ 	} else {
+ 		printf("WARNING: Unsupported baseboard: '%s'\n",
+ 			baseboard);
+@@ -1537,6 +1596,7 @@
+ {
+ 	const char *baseboard = getenv("baseboard");
+ 	int stk5_v5 = baseboard != NULL && (strcmp(baseboard, "stk5-v5") == 0);
++	int dehn_bms = baseboard != NULL && (strcmp(baseboard, "Dehn_BMS") == 0);
+ 	const char *video_mode = karo_get_vmode(getenv("video_mode"));
+ 	int ret;
+ 
+@@ -1545,6 +1605,13 @@
+ 		printf("Failed to increase FDT size: %s\n", fdt_strerror(ret));
+ 		return ret;
+ 	}
++	
++	if (dehn_bms) {
++		fdt_fixup_mtdparts(blob, nodes, ARRAY_SIZE(nodes));
++		karo_fdt_fixup_usb_otg(blob, "usbotg", "fsl,usbphy", "vbus-supply");
++		return 0;
++	}
++
+ 	if (stk5_v5)
+ 		karo_fdt_enable_node(blob, "stk5led", 0);
+ 
+diff -urN orig/common/cmd_usb.c work/common/cmd_usb.c
+--- orig/common/cmd_usb.c	2016-10-28 11:51:39.058012000 +0200
++++ work/common/cmd_usb.c	2016-10-28 12:19:51.626012000 +0200
+@@ -467,12 +467,17 @@
+ 		break;
+ 	case 'F':
+ 	case 'f':
+-		printf("Setting Test_Force_Enable mode");
+-		mode = USB_TEST_MODE_FORCE_ENABLE;
++		printf("Setting Test_Force_Enable_FS mode");
++		mode = USB_TEST_MODE_FORCE_ENABLE_FS;
++		break;
++	case 'H':
++	case 'h':
++		printf("Setting Test_Force_Enable_HS mode");
++		mode = USB_TEST_MODE_FORCE_ENABLE_HS;
+ 		break;
+ 	default:
+ 		printf("Unrecognized test mode: %s\nAvailable modes: "
+-		       "J, K, S[E0_NAK], P[acket], F[orce_Enable]\n", arg);
++		       "J, K, S[E0_NAK], P[acket], F[orce_Enable_FS], H[force_Enable_HS]\n", arg);
+ 		return 1;
+ 	}
+ 
+@@ -820,7 +825,7 @@
+ 	"usb info [dev] - show available USB devices\n"
+ 	"usb test [dev] [port] [mode] - set USB 2.0 test mode\n"
+ 	"    (specify port 0 to indicate the device's upstream port)\n"
+-	"    Available modes: J, K, S[E0_NAK], P[acket], F[orce_Enable]\n"
++	"    Available modes: J, K, S[E0_NAK], P[acket], F[orce_Enable_FS], H[force_Enable_HS]\n"
+ #ifdef CONFIG_USB_STORAGE
+ 	"usb storage - show details of USB storage devices\n"
+ 	"usb dev [dev] - show or set current USB storage device\n"
+diff -urN orig/configs/tx6s-8035_defconfig work/configs/tx6s-8035_defconfig
+--- orig/configs/tx6s-8035_defconfig	2016-10-28 11:51:39.186012000 +0200
++++ work/configs/tx6s-8035_defconfig	2016-11-17 17:44:01.515569056 +0100
+@@ -1,33 +1,27 @@
+-CONFIG_SYS_EXTRA_OPTIONS="MMC_BOOT_SIZE=1024,SYS_SDRAM_BUS_WIDTH=32"
+ CONFIG_ARM=y
+ CONFIG_ARCH_MX6=y
+ CONFIG_TARGET_TX6=y
++CONFIG_SYS_SDRAM_CHIP_SIZE=512
+ CONFIG_TARGET_TX6S_EMMC=y
+-CONFIG_TX6_UBOOT=y
+-CONFIG_BOOTP_DNS=y
+-CONFIG_BOOTP_GATEWAY=y
+-CONFIG_BOOTP_SUBNETMASK=y
+-CONFIG_CMD_BMP=y
++CONFIG_SYS_EXTRA_OPTIONS="MMC_BOOT_SIZE=1024,SYS_SDRAM_BUS_WIDTH=32"
++CONFIG_HUSH_PARSER=y
++CONFIG_SYS_PROMPT="TX6S U-Boot > "
+ CONFIG_CMD_BOOTCE=y
+-CONFIG_CMD_BOOTZ=y
+-CONFIG_CMD_CACHE=y
+-CONFIG_CMD_DHCP=y
+-CONFIG_CMD_FUSE=y
+-CONFIG_CMD_I2C=y
+ CONFIG_CMD_MEMTEST=y
+ CONFIG_CMD_MEMINFO=y
+-CONFIG_CMD_MII=y
+-CONFIG_CMD_MMC=y
++CONFIG_CMD_I2C=y
++CONFIG_CMD_DHCP=y
++CONFIG_BOOTP_DNS=y
++CONFIG_BOOTP_GATEWAY=y
++CONFIG_BOOTP_SUBNETMASK=y
+ CONFIG_CMD_PING=y
++CONFIG_CMD_MII=y
++CONFIG_CMD_CACHE=y
+ CONFIG_CMD_TIME=y
+-CONFIG_DOS_PARTITION=y
++CONFIG_CMD_FUSE=y
+ CONFIG_ENV_IS_IN_MMC=y
+-CONFIG_FEC_MXC=y
+-CONFIG_FEC_MXC_PHYADDR=0
+-CONFIG_IMX_WATCHDOG=y
+-CONFIG_LCD=y
+-CONFIG_NET=y
++CONFIG_DOS_PARTITION=y
+ CONFIG_NETDEVICES=y
++CONFIG_FEC_MXC=y
+ CONFIG_PHY_SMSC=y
+-CONFIG_SYS_PROMPT="TX6S U-Boot > "
+-CONFIG_SYS_SDRAM_CHIP_SIZE=512
++CONFIG_IMX_WATCHDOG=y
+diff -urN orig/include/configs/tx6.h work/include/configs/tx6.h
+--- orig/include/configs/tx6.h	2016-10-28 11:51:39.582012000 +0200
++++ work/include/configs/tx6.h	2016-11-14 11:20:14.494960362 +0100
+@@ -153,7 +153,8 @@
+ #define CONFIG_SYS_AUTOLOAD		"no"
+ #define DEFAULT_BOOTCMD			"run bootcmd_${boot_mode} bootm_cmd"
+ #define CONFIG_BOOTFILE			"uImage"
+-#define CONFIG_BOOTARGS			"init=/linuxrc console=ttymxc0,115200 ro debug panic=1"
++/*#define CONFIG_BOOTARGS			"init=/linuxrc console=ttymxc0,115200 ro debug panic=1"*/
++#define CONFIG_BOOTARGS			"console=ttymxc0,115200 ro debug panic=1"
+ #ifndef CONFIG_TX6_UBOOT_MFG
+ #define CONFIG_BOOTCOMMAND		DEFAULT_BOOTCMD
+ #else
+@@ -212,8 +213,9 @@
+ 	" ubi.mtd=rootfs root=ubi0:rootfs rootfstype=ubifs\0"		\
+ 	"bootcmd_jffs2=setenv autostart no;run bootargs_jffs2"		\
+ 	";nboot linux\0"						\
+-	"bootcmd_mmc=setenv autostart no;run bootargs_mmc"		\
+-	";fatload mmc 0 ${loadaddr} uImage\0"				\
++	"bootcmd_mmc=run upd_select_boot_mode;setenv autostart no"	\
++	";run bootargs_mmc"						\
++	";fatload mmc 0 ${loadaddr} ${bootfile}\0"			\
+ 	CONFIG_SYS_BOOT_CMD_NAND					\
+ 	"bootcmd_net=setenv autoload y;setenv autostart n"		\
+ 	";run bootargs_nfs"						\
+@@ -234,7 +236,18 @@
+ 	"otg_mode=device\0"						\
+ 	ROOTPART_UUID_STR						\
+ 	"touchpanel=tsc2007\0"						\
+-	"video_mode=" DEFAULT_VIDEO_MODE "\0"
++	"video_mode=" DEFAULT_VIDEO_MODE "\0"				\
++	"upd_reset_file=mw ${loadaddr} 0; fatwrite mmc 0 ${loadaddr}"	\
++	" update.flg 4; run upd_switch_to_normal\0"			\
++	"upd_test_update=mw ${loadaddr} 0; fatload mmc 0 ${loadaddr}"	\
++	" update.flg; if itest *${loadaddr} == 0; then run"		\
++	" upd_switch_to_update; else run upd_reset_file; fi\0"		\
++	"upd_switch_to_update=setenv rootpart_uuid 0cc66cc0-02"		\
++	";setenv bootfile uImage-update;echo Booting Updatesystem\0"		\
++	"upd_switch_to_normal=setenv rootpart_uuid 0cc66cc0-04"		\
++	";setenv bootfile uImage-app;echo Booting Normalsystem\0"	\
++	"upd_select_boot_mode=if test -e mmc 0 update.flg"		\
++	";then run upd_test_update;else run upd_switch_to_normal;fi\0"
+ #endif /*  CONFIG_ENV_IS_NOWHERE */
+ 
+ #ifdef CONFIG_TX6_NAND
+@@ -405,4 +418,17 @@
+ #define CONFIG_SYS_INIT_SP_ADDR		(CONFIG_SYS_SDRAM_BASE + 0x1000 - /* Fix this */ \
+ 					GENERATED_GBL_DATA_SIZE)
+ 
++#define CONFIG_CMD_USB
++#ifdef CONFIG_CMD_USB
++#define CONFIG_USB_EHCI
++#define CONFIG_USB_EHCI_MX6
++#define CONFIG_USB_STORAGE 
++#define CONFIG_EHCI_HCD_INIT_AFTER_RESET
++#define CONFIG_USB_HOST_ETHER
++#define CONFIG_USB_ETHER_ASIX
++#define CONFIG_MXC_USB_PORTSC  (PORT_PTS_UTMI | PORT_PTS_PTW)	// | PORT_PFSC --> force full speed
++#define CONFIG_MXC_USB_FLAGS   0
++#define CONFIG_USB_MAX_CONTROLLER_COUNT 2
++#endif
++
+ #endif /* __CONFIG_H */
+diff -urN orig/include/usb_defs.h work/include/usb_defs.h
+--- orig/include/usb_defs.h	2016-10-28 11:51:39.718012000 +0200
++++ work/include/usb_defs.h	2016-10-28 12:19:51.626012000 +0200
+@@ -162,7 +162,8 @@
+ #define USB_TEST_MODE_K             0x02
+ #define USB_TEST_MODE_SE0_NAK       0x03
+ #define USB_TEST_MODE_PACKET        0x04
+-#define USB_TEST_MODE_FORCE_ENABLE  0x05
++#define USB_TEST_MODE_FORCE_ENABLE_HS  0x05
++#define USB_TEST_MODE_FORCE_ENABLE_FS  0x06
+ 
+ 
+ /*
+diff -urN orig/Makefile work/Makefile
+--- orig/Makefile	2016-10-28 11:51:37.698012000 +0200
++++ work/Makefile	2016-10-28 12:19:51.626012000 +0200
+@@ -1,8 +1,8 @@
+ VERSION = 2015
+ PATCHLEVEL = 10
+ SUBLEVEL =
+-EXTRAVERSION = -rc2
+-NAME =
++EXTRAVERSION = -rc2-Dehn-BMS
++NAME = 
+ 
+ # *DOCUMENTATION*
+ # To see a list of typical targets execute "make help"

@@ -1,0 +1,103 @@
+From ae3b41c059586bf4b0272b0cd602a533321eaf68 Mon Sep 17 00:00:00 2001
+From: Kas User <kas@example.com>
+Date: Tue, 12 Dec 2023 18:33:11 +0000
+Subject: [PATCH] configs/tx6.h: define omnect extra env settings
+
+Signed-off-by: Kas User <kas@example.com>
+---
+ include/configs/tx6.h | 67 ++++++++++++++++---------------------------
+ 1 file changed, 24 insertions(+), 43 deletions(-)
+
+diff --git a/include/configs/tx6.h b/include/configs/tx6.h
+index 7bcdf37619..2879ed1a4a 100644
+--- a/include/configs/tx6.h
++++ b/include/configs/tx6.h
+@@ -29,6 +29,8 @@
+ #include <linux/sizes.h>
+ #include <asm/arch/imx-regs.h>
+ 
++#include <configs/omnect_env.h>
++
+ /*
+  * Ka-Ro TX6 board - SoC configuration
+  */
+@@ -200,54 +202,33 @@
+ #define CONFIG_EXTRA_ENV_SETTINGS					\
+ 	"autostart=no\0"						\
+ 	"baseboard=stk5-v3\0"						\
+-	"bootargs_jffs2=run default_bootargs"				\
+-	";setenv bootargs ${bootargs}"					\
+-	" root=/dev/mtdblock3 rootfstype=jffs2\0"			\
+-	"bootargs_mmc=run default_bootargs;setenv bootargs ${bootargs}"	\
+-	MMC_ROOT_STR							\
+-	"bootargs_nfs=run default_bootargs;setenv bootargs ${bootargs}"	\
+-	" root=/dev/nfs nfsroot=${nfs_server}:${nfsroot},nolock"	\
+-	" ip=dhcp\0"							\
+-	"bootargs_ubifs=run default_bootargs"				\
+-	";setenv bootargs ${bootargs}"					\
+-	" ubi.mtd=rootfs root=ubi0:rootfs rootfstype=ubifs\0"		\
+-	"bootcmd_jffs2=setenv autostart no;run bootargs_jffs2"		\
+-	";nboot linux\0"						\
+-	"bootcmd_mmc=run upd_select_boot_mode;setenv autostart no"	\
+-	";run bootargs_mmc"						\
+-	";fatload mmc 0 ${loadaddr} ${bootfile}\0"			\
+-	CONFIG_SYS_BOOT_CMD_NAND					\
+-	"bootcmd_net=setenv autoload y;setenv autostart n"		\
+-	";run bootargs_nfs"						\
+-	";dhcp\0"							\
+-	"bootm_cmd=bootm ${loadaddr} - ${fdtaddr}\0"			\
+-	"boot_mode=" CONFIG_SYS_DEFAULT_BOOT_MODE "\0"			\
+ 	"cpu_clk=" CONFIG_SYS_CPU_CLK_STR "\0"				\
+-	"default_bootargs=setenv bootargs " CONFIG_BOOTARGS		\
+-	" ${append_bootargs}\0"						\
+-	EMMC_BOOT_PART_STR						\
+-	EMMC_BOOT_ACK_STR						\
+ 	"fdtaddr=" xstr(CONFIG_FDTADDR) "\0"				\
+ 	FDT_HIGH_STR							\
+ 	FDTSAVE_CMD_STR							\
+-	"mtdids=" MTDIDS_DEFAULT "\0"					\
+-	"mtdparts=" MTDPARTS_DEFAULT "\0"				\
+-	"nfsroot=/tftpboot/rootfs\0"					\
+ 	"otg_mode=device\0"						\
+-	ROOTPART_UUID_STR						\
+-	"touchpanel=tsc2007\0"						\
+-	"video_mode=" DEFAULT_VIDEO_MODE "\0"				\
+-	"upd_reset_file=mw ${loadaddr} 0; fatwrite mmc 0 ${loadaddr}"	\
+-	" update.flg 4; run upd_switch_to_normal\0"			\
+-	"upd_test_update=mw ${loadaddr} 0; fatload mmc 0 ${loadaddr}"	\
+-	" update.flg; if itest *${loadaddr} == 0; then run"		\
+-	" upd_switch_to_update; else run upd_reset_file; fi\0"		\
+-	"upd_switch_to_update=setenv rootpart_uuid 0cc66cc0-02"		\
+-	";setenv bootfile uImage-update;echo Booting Updatesystem\0"		\
+-	"upd_switch_to_normal=setenv rootpart_uuid 0cc66cc0-04"		\
+-	";setenv bootfile uImage-app;echo Booting Normalsystem\0"	\
+-	"upd_select_boot_mode=if test -e mmc 0 update.flg"		\
+-	";then run upd_test_update;else run upd_switch_to_normal;fi\0"
++	"mmcdev=0\0"						\
++	"boot_script=fatload mmc ${devnum}:1 ${script_addr_r} /boot.scr && source ${script_addr_r}\0" \
++	"load_fdt_script=fatload mmc ${devnum}:1 ${script_addr_r} /fdt-load.scr && source ${script_addr_r}\0" \
++	"bootcmd_pxe=run load_fdt_script; dhcp; if pxe get; then pxe boot; fi\0" \
++	"devtype=mmc\0" \
++	"distro_bootcmd=mmc dev ${mmcdev};" \
++		"if mmc rescan; then " \
++			"setenv devnum ${mmcdev};" \
++			"run load_fdt_script;" \
++			"run scan_boot_script;" \
++		"fi\0" \
++	"fdt_addr=0x11000000\0" \
++	"fdto_addr=0x11100000\0" \
++	"kernel_addr_r=18000000\0" \
++	"pxefile_addr_r=0x11800000\0" \
++	"ramdisk_addr_r=0x11200000\0" \
++	"scan_boot_script=if test -e mmc ${devnum}:1 /boot.scr; then echo Found U-Boot script; run boot_script; echo SCRIPT FAILED: continuing...; fi\0" \
++	"script_addr_r=0x11080000\0" \
++	OMNECT_ENV_UPDATE_WORKFLOW \
++	OMNECT_ENV_SETTINGS \
++	OMNECT_ENV_BOOTLOADER_VERSION \
++	OMNECT_ENV_BOOTARGS
+ #endif /*  CONFIG_ENV_IS_NOWHERE */
+ 
+ #ifdef CONFIG_TX6_NAND
+-- 
+2.39.2
+

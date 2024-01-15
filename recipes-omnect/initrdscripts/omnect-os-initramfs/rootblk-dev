@@ -7,12 +7,6 @@ rootblk_dev_enabled() {
 rootblk_dev_generate_dev_omnect() {
     [ -z "${bootparam_root}" ] && msg "no root device set" && return 1
 
-    # waiting for root device to show up, e.g. needed by welotec boot from usb
-    while [ ! -b "${bootparam_root}" ]; do
-        debug "waiting for root=${bootparam_root}"
-        sleep 0.1
-    done
-
     mkdir -p /dev/omnect
     cd /dev/omnect
 
@@ -30,6 +24,20 @@ rootblk_dev_generate_dev_omnect() {
             msg_fatal "failed to detect root blk device" && return 1
         fi
     fi
+
+    ln -sf /dev/${rootblk} rootblk
+
+    # waiting for root device to show up, e.g. needed by welotec boot from usb
+    local waitmax=50
+    while [ ! -b "${bootparam_root}" ]; do
+        debug "waiting for root=${bootparam_root}"#
+	waitmax=$(expr $waitmax - 1)
+	if [ $waitmax -le 0 ]; then
+	    msg_error "root device \"$bootparam_root\" didn't show up - generation of omnect device links aborted"'!'
+	    return 0
+	fi
+        sleep 0.1
+    done
 
     debug part=${part}
     debug rootblk=${rootblk}

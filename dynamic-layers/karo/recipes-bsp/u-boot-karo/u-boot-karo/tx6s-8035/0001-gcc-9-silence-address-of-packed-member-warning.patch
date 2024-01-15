@@ -1,0 +1,49 @@
+From 6d7e3f066d2b977b02f6a471e749030d62ae5bde Mon Sep 17 00:00:00 2001
+From: Andy Shevchenko <andriy.shevchenko@linux.intel.com>
+Date: Fri, 29 Nov 2019 19:47:59 +0200
+Subject: [PATCH] gcc-9: silence 'address-of-packed-member' warning
+MIME-Version: 1.0
+Content-Type: text/plain; charset=UTF-8
+Content-Transfer-Encoding: 8bit
+
+GCC 9.x starts complaining about potential misalignment of the pointer to
+the array (in this case alignment=2) in the packed (alignment=1) structures.
+
+Repeating Linus' Torvalds commit 6f303d60534c in the Linux kernel.
+
+Original commit message:
+
+  We already did this for clang, but now gcc has that warning too.
+  Yes, yes, the address may be unaligned.  And that's kind of the point.
+
+This in particular hides the warnings like
+
+drivers/usb/gadget/composite.c:545:23: warning: taking address of packed member of ‘struct usb_string_descriptor’ may result in an unaligned pointer value [-Waddress-of-packed-member]
+  545 |    collect_langs(sp, s->wData);
+
+drivers/usb/gadget/composite.c:550:24: warning: taking address of packed member of ‘struct usb_string_descriptor’ may result in an unaligned pointer value [-Waddress-of-packed-member]
+  550 |     collect_langs(sp, s->wData);
+
+drivers/usb/gadget/composite.c:555:25: warning: taking address of packed member of ‘struct usb_string_descriptor’ may result in an unaligned pointer value [-Waddress-of-packed-member]
+  555 |      collect_langs(sp, s->wData);
+
+Signed-off-by: Andy Shevchenko <andriy.shevchenko@linux.intel.com>
+---
+ Makefile | 1 +
+ 1 file changed, 1 insertion(+)
+
+diff --git a/Makefile b/Makefile
+index 6aad3934832..dcce4cbe478 100644
+--- a/Makefile
++++ b/Makefile
+@@ -576,6 +576,7 @@ ifeq ($(shell $(CONFIG_SHELL) $(srctree)/scripts/gcc-stack-usage.sh $(CC)),y)
+ endif
+ 
+ KBUILD_CFLAGS += $(call cc-option,-Wno-format-nonliteral)
++KBUILD_CFLAGS += $(call cc-disable-warning, address-of-packed-member)
+ 
+ # turn jbsr into jsr for m68k
+ ifeq ($(ARCH),m68k)
+-- 
+2.34.1
+

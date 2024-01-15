@@ -1,0 +1,56 @@
+software =
+{
+    version = "@@SOFTWARE_VERSION@@";
+
+    @@MACHINE@@ = {
+        embedded-script ="
+        function check_bootloader_version(image)
+            os.execute(\"fw_printenv -n omnect_u-boot_version > /tmp/bootloader_version\")
+            fh = io.open(\"/tmp/bootloader_version\")
+            bootloader_version = fh:read()
+            fh:close()
+            swupdate.trace(\"bootloader_version: \" .. bootloader_version)
+            swupdate.trace(\"image.version: \" .. image.version)
+            if bootloader_version == image.version then
+                result = nil
+            else
+	        /*
+		 * FIXME: need to implement firmware handling
+                 * f = io.open(\"/run/omnect-bootloader-update\", \"w\")
+                 * f:close()
+                 * result = image
+		 */
+		result = nil
+            end
+            return true, result
+        end
+        ";
+        hardware-compatibility: [ "@@HW_REV@@" ];
+        stable : {
+            copy1 : {
+                images: (
+                    {
+                        name = "@@SOFTWARE_NAME@@"
+                        filename = "@@DISTRO@@-@@MACHINE@@.ext4.gz";
+                        sha256 = "$swupdate_get_sha256(@@DISTRO@@-@@MACHINE@@.ext4.gz)";
+                        type = "raw";
+                        compressed = "zlib";
+                        device = "/dev/omnect/rootA";
+                    }
+                );
+            };
+            copy2 : {
+                images: (
+                    {
+                        name = "@@SOFTWARE_NAME@@"
+                        filename = "@@DISTRO@@-@@MACHINE@@.ext4.gz";
+                        sha256 = "$swupdate_get_sha256(@@DISTRO@@-@@MACHINE@@.ext4.gz)";
+                        type = "raw";
+                        compressed = "zlib";
+                        device = "/dev/omnect/rootB";
+                    }
+                );
+            };
+        };
+    }
+}

@@ -1,0 +1,47 @@
+#!/bin/sh
+
+swapfile_enabled() {
+    return 0
+}
+
+swapfile_create() {
+    local swapfilename=swapfile
+    local swapfiledir=${ROOTFS_DIR}/mnt/data/var
+    local swapfilepath=${swapfiledir}/${swapfilename}
+    local swapfilesizeM="512"
+    local swapfilesizeB="$(expr $swapfilesizeM \* 1024 \* 1024)"
+    
+    msg "check swapfile ${swapfilepath} [${swapfilesizeM}M]"
+
+    if ! mountpoint -q ${ROOTFS_DIR}/mnt/data; then
+        msg_fatal "data partition not yet mounted" && return 1
+    fi
+    if [ -f "$swapfilepath" ]; then
+	local stat="$(stat -t "$swapfilepath")"
+	local size=$(set -- $stat; echo $2)
+
+	if [ $size != $swapfilesizeB ]; then
+	    msg_error "swapfile exists but with wrong size ($size != $swapfilesizeB) [ignored]"
+	    run_cmd rm "$swapfilepath"
+	else
+	    return 0
+	fi
+    fi
+
+    msg "create swapfile ${swapfilepath} [${swapfilesizeM}M]"
+    run_cmd dd if=/dev/zero of=${swapfilepath} bs=1M count=$swapfilesizeM
+    run_cmd chmod 0600 "$swapfilepath"
+    run_cmd mkswap "$swapfilepath"
+
+    # FIXME: actually we should be prepared for an already existing fstab file!
+    if [ ! -f ${ROOTFS_DIR}/etc/fstab ]; then
+	echo "/mnt/data/var/swapfile none            swap    sw              0       0" > ${ROOTFS_DIR}/etc/fstab
+    fi
+}
+
+swapfile_run() {
+    add_module_post_hook on_exit
+    msg "$(grep ^PRETTY_NAME= /etc/os-release | cut -d= -f2) initramfs / $(basename $0)"
+    swapfile_create
+    return=${?}
+}
