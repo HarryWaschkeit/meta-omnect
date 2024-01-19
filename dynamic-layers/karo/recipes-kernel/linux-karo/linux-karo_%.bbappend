@@ -11,10 +11,12 @@ FILESEXTRAPATHS:prepend := "${THISDIR}/files:${THISDIR}/files/tx6:"
 #	file://wireguard.cfg \
 #	file://enable-overlayfs.cfg \
 #"
-SRC_URI += " \
+SRC_URI:append = " \
 	file://0001-imx6qdl.dtsi-make-usdhc4-mmc0.patch \
 	file://defconfig \
 "
+
+# KCONFIG_MODE = "alldefconfig"
 
 #ADD_KERNEL_FEATURES = "netfilter.cfg docker.cfg lxc.cfg enable-cifs.cfg disable-kvm.cfg lxc.cfg wireguard.cfg enable-overlayfs.cfg"
 #KERNEL_FEATURES += " ${ADD_KERNEL_FEATURES}"
