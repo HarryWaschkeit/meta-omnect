@@ -31,6 +31,9 @@ SERIAL_CONSOLES ="${@bb.utils.contains('OMNECT_RELEASE_IMAGE', '1', '', '115200;
 APPEND += "console=ttymxc0,115200 uboot=/dev/mmcblk0boot0"
 
 # u-boot boot.scr config
+KERNEL_IMAGETYPE = "uImage"
+KERNEL_EXTRA_ARGS += "LOADADDR=${UBOOT_ENTRYPOINT}"
+
 KERNEL_BOOTCMD = "bootz"
 UBOOT_ARCH = "arm"
 UBOOT_FDT_ADDR = "fdt_addr"
