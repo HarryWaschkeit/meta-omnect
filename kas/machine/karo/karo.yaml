@@ -11,7 +11,7 @@ repos:
   ext/meta-karo:
     url: "git@github.com:HarryWaschkeit/meta-karo.git"
     branch: hwt-dehndetect
-    commit: d9ac2b4e3fd6809b7aefaf9ee8978bad23ca14c3
+    commit: 77979eb998303e7ad5bfc6d3575ab72b5b30c034
   ext/meta-freescale:
     url: "https://github.com/Freescale/meta-freescale.git"
     branch: kirkstone
