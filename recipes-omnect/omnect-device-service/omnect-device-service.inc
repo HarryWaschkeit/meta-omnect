@@ -57,6 +57,11 @@ do_install:append() {
 
     # create tmpfiles.d entry to (re)create dir + permissions
     install -m 0644 -D ${WORKDIR}/omnect-device-service.tmpfilesd ${D}${libdir}/tmpfiles.d/omnect-device-service.conf
+
+    # FIXME: installation of environment file to prolong polling interval
+    #        (>1ms) shouldn't be done here but in code and with a generic value!
+    echo "AZURE_SDK_DO_WORK_FREQUENCY_IN_MS=100" > ${WORKDIR}/omnect-device-service.env
+    install -m 0644 -D ${WORKDIR}/omnect-device-service.env ${D}${sysconfdir}/omnect/omnect-device-service.env
 }
 
 do_install:append:omnect_grub() {
