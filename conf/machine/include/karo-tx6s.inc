@@ -34,7 +34,7 @@ APPEND += "console=ttymxc0,115200 uboot=/dev/mmcblk0boot0"
 KERNEL_IMAGETYPE = "uImage"
 KERNEL_EXTRA_ARGS += "LOADADDR=${UBOOT_ENTRYPOINT}"
 
-KERNEL_BOOTCMD = "bootz"
+KERNEL_BOOTCMD = "bootm"
 UBOOT_ARCH = "arm"
 UBOOT_FDT_ADDR = "fdt_addr"
 UBOOT_FDT_LOAD = "0"
