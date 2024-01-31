@@ -28,7 +28,7 @@ OMNECT_INITRAMFS_FSTYPE = "cpio.gz.u-boot"
 # Set Serial console
 SERIAL_CONSOLES ="${@bb.utils.contains('OMNECT_RELEASE_IMAGE', '1', '', '115200;ttymxc2', d)}"
 #bootargs console is not part of the devictree, so we have to append it to kernel commandline
-APPEND += "console=ttymxc0,115200 uboot=/dev/mmcblk0boot0"
+APPEND += "console=ttymxc0,115200 uboot=/dev/mmcblk0"
 
 # u-boot boot.scr config
 KERNEL_IMAGETYPE = "uImage"
