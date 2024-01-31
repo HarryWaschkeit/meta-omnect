@@ -16,6 +16,7 @@ SRC_URI:append:tx6s-8035 = " \
 	file://u-boot-cfg.generic \
 	file://omnect_env.h \
 	file://omnect_env_karo_tx6s.h \
+	file://0004-include-configs-tx6.h-make-user-data-partition-the-o.patch \
 "
 SRCBRANCH:mx6 = "master"
 SRCREV:mx6 = "9c867060812647af60840df7caf78f6567b2bd29"
@@ -47,6 +48,12 @@ do_configure:prepend() {
 
 do_configure:prepend:tx6s-8035() {
     cp -f ${WORKDIR}/omnect_env_karo_tx6s.h ${S}/include/configs/omnect_env_machine.h
+}
+
+do_deploy:append:tx6s-8035() {
+    # deploy a binary lacking the initial 1K filler (0xdeadf001) which can be
+    # can be used for integration into WIC as well as into SWU
+    dd if=${DEPLOYDIR}/u-boot.bin of=${DEPLOYDIR}/u-boot.bin.stripped bs=1K skip=1
 }
 
 do_deploy:append() {
