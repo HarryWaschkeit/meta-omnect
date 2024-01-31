@@ -1,4 +1,4 @@
-FILESEXTRAPATHS:prepend := "${THISDIR}/files:${THISDIR}/files/tx6:"
+FILESEXTRAPATHS:prepend := "${THISDIR}/files:${THISDIR}/${BP}:"
 
 # FIXME: kernel configuration should definitely not get copied here!
 #SRC_URI += " \

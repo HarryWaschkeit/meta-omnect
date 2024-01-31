@@ -1,5 +1,8 @@
 FILESEXTRAPATHS:prepend := "${THISDIR}/${PN}:${THISDIR}/${PN}/defconfigs:${LAYERDIR_omnect}/recipes-bsp/u-boot/u-boot:"
 
+LICENSE = "GPL-2.0-or-later"
+LIC_FILES_CHKSUM:mx6 = "file://Licenses/README;md5=0507cd7da8e7ad6d6701926ec9b84c95"
+
 SRC_URI:append:tx6s-8035 = " \
 	file://0001-make-compilable-with-cortexa9hf-neon-tune.patch \
 	file://0001-compiler-.h-sync-include-linux-compiler-.h-with-Linu.patch \
@@ -14,6 +17,7 @@ SRC_URI:append:tx6s-8035 = " \
 	file://omnect_env.h \
 	file://omnect_env_karo_tx6s.h \
 "
+SRCBRANCH:mx6 = "master"
 SRCREV:mx6 = "9c867060812647af60840df7caf78f6567b2bd29"
 
 EXTRA_OEMAKE:append:tx6s-8035 = " KCFLAGS='-mfpu=neon -mfloat-abi=hard -mcpu=cortex-a9 -mgeneral-regs-only'"
@@ -26,6 +30,14 @@ EXTRA_OEMAKE:append:tx6s-8035 = " KCFLAGS='-mfpu=neon -mfloat-abi=hard -mcpu=cor
 #   `OMNECT_UBOOT_WRITEABLE_ENV_FLAGS`
 UBOOT_LOCALVERSION = "-1"
 PKGV = "${PV}${UBOOT_LOCALVERSION}"
+
+UBOOT_ENV_FILE:mx6 = ""
+SRC_URI:append:mx6 = "${@ " file://${UBOOT_ENV_FILE};subdir=git/board/karo/tx6" if "${UBOOT_ENV_FILE}" != "" else ""}"
+
+UBOOT_BOARD_DIR:mx6 = "board/karo/tx6"
+
+COMPATIBLE_MACHINE:tx6 = "(tx6[qsu]-.*)"
+COMPATIBLE_MACHINE:txul = "(txul-.*)"
 
 inherit omnect_uboot_configure_env
 
