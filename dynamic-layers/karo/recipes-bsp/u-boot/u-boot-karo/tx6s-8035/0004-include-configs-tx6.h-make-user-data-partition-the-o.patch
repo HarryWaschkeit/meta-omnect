@@ -1,0 +1,27 @@
+From a787e14490891d13343f7145f65656a501119992 Mon Sep 17 00:00:00 2001
+From: Kas User <kas@example.com>
+Date: Wed, 31 Jan 2024 17:17:08 +0000
+Subject: [PATCH 1/1] include/configs/tx6.h: make user data partition the one
+ for the environment
+
+Signed-off-by: Kas User <kas@example.com>
+---
+ include/configs/tx6.h | 2 +-
+ 1 file changed, 1 insertion(+), 1 deletion(-)
+
+diff --git a/include/configs/tx6.h b/include/configs/tx6.h
+index 1e9b87310c..a50f0a0b7e 100644
+--- a/include/configs/tx6.h
++++ b/include/configs/tx6.h
+@@ -371,7 +371,7 @@
+  */
+ #ifdef CONFIG_ENV_IS_IN_MMC
+ #define CONFIG_SYS_MMC_ENV_DEV		0
+-#define CONFIG_SYS_MMC_ENV_PART		0x1
++#define CONFIG_SYS_MMC_ENV_PART		0x0
+ #define CONFIG_DYNAMIC_MMC_DEVNO
+ #endif /* CONFIG_ENV_IS_IN_MMC */
+ #endif /* CONFIG_CMD_MMC */
+-- 
+2.39.2
+
