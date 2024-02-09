@@ -5,7 +5,7 @@ ubootblk_dev_enabled() {
 }
 
 ubootblk_dev_generate_dev_omnect() {
-    [ -z "${bootparam_uboot}" ] && msg "no ubot device set" && return 1
+    [ -z "${bootparam_uboot}" ] && msg "no uboot device set" && return 1
 
     # waiting for uboot device to show up, e.g. needed by welotec boot from usb
     while [ ! -b "${bootparam_uboot}" ]; do
