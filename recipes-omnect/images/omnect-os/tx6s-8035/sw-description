@@ -14,13 +14,9 @@ software =
             if bootloader_version == image.version then
                 result = nil
             else
-	        /*
-		 * FIXME: need to implement firmware handling
-                 * f = io.open(\"/run/omnect-bootloader-update\", \"w\")
-                 * f:close()
-                 * result = image
-		 */
-		result = nil
+                f = io.open(\"/run/omnect-bootloader-update\", \"w\")
+                f:close()
+                result = image
             end
             return true, result
         end
@@ -48,6 +44,35 @@ software =
                         type = "raw";
                         compressed = "zlib";
                         device = "/dev/omnect/rootB";
+                    }
+                );
+            };
+            bootloader : {
+                images: (
+                    {
+                        name = "bootloader"
+                        hook = "check_bootloader_version";
+                        filename = "u-boot.bin.stripped";
+                        sha256 = "$swupdate_get_sha256(u-boot.bin.stripped)";
+                        version = "$swupdate_get_pkgvar(u-boot-karo@PKGV)";
+                        type = "raw";
+                        device = "/dev/omnect/rootblk";
+                        offset = "1K";
+                    }
+                );
+                files: (
+                    {
+                        name = "boot-partition"
+                        hook = "check_bootloader_version";
+                        version = "$swupdate_get_pkgvar(u-boot-karo@PKGV)";
+                        filename = "boot-partition-update.tar.gz";
+                        type = "archive";
+                        compressed = "zlib";
+                        preserve-attributes = false;
+                        path = "/";
+                        sha256 = "$swupdate_get_sha256(boot-partition-update.tar.gz)";
+                        device = "/dev/omnect/boot";
+                        filesystem = "vfat"
                     }
                 );
             };
