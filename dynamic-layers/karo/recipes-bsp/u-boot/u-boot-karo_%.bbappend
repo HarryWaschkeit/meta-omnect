@@ -29,7 +29,7 @@ EXTRA_OEMAKE:append:tx6s-8035 = " KCFLAGS='-mfpu=neon -mfloat-abi=hard -mcpu=cor
 # Note: `UBOOT_LOCALVERSION` should be also increased on change of variables
 #   `APPEND`,
 #   `OMNECT_UBOOT_WRITEABLE_ENV_FLAGS`
-UBOOT_LOCALVERSION = "-1"
+UBOOT_LOCALVERSION = "-5"
 PKGV = "${PV}${UBOOT_LOCALVERSION}"
 
 UBOOT_ENV_FILE:mx6 = ""
