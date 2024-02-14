@@ -9,7 +9,7 @@ ubootblk_dev_generate_dev_omnect() {
 
     # waiting for uboot device to show up, e.g. needed by welotec boot from usb
     while [ ! -b "${bootparam_uboot}" ]; do
-        debug "waiting for root=${bootparam_uboot}"
+        debug "waiting for ubootblk-dev=${bootparam_uboot}"
         sleep 0.1
     done
 
