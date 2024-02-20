@@ -17,6 +17,7 @@ SRC_URI:append:tx6s-8035 = " \
 	file://omnect_env.h \
 	file://omnect_env_karo_tx6s.h \
 	file://0004-include-configs-tx6.h-make-user-data-partition-the-o.patch \
+	file://0001-increase-CONFIG_SYS_BOOTM_SIZE.patch \
 "
 SRCBRANCH:mx6 = "master"
 SRCREV:mx6 = "9c867060812647af60840df7caf78f6567b2bd29"
