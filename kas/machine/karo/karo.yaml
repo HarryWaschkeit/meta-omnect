@@ -12,6 +12,10 @@ repos:
     url: "https://github.com/karo-electronics/meta-karo.git"
     branch: kirkstone
     commit: ab2c5c6b95e6893b220efe587518012ce948d93d
+  ext/meta-phytec:
+    url: "https://github.com/phytec/meta-phytec"
+    branch: kirkstone
+    commit: 8e80cb45e2671de7a38686466c037395872f4d5b
   ext/meta-freescale:
     url: "https://github.com/Freescale/meta-freescale.git"
     branch: kirkstone
