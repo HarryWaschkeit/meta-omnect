@@ -1,5 +1,13 @@
 FILESEXTRAPATHS:prepend := "${THISDIR}/files:${THISDIR}/${BP}:"
 
+## want to use v5.15.102 as phytec does
+#SRCREV = "2ddbd0f967b34872290e0f98fae32b91b4de7b87"
+#
+#SRC_URI:remove = " \
+#	file://0010-attiny-regulator-i2c-retries.patch \
+#	file://0016-parallel-display-bus-flags-from-display-info.patch \
+#"
+
 # FIXME: kernel configuration should definitely not get copied here!
 #SRC_URI += " \
 #	file://netfilter.cfg \
