@@ -24,7 +24,8 @@ DEHNdetect devices.
 ## Hacks & shortcomings
 
 - overall structure of code additions is quick and very dirty
-  - direct meta-karo modifications shouldn't be done
+  - <del>direct meta-karo modifications shouldn't be done</del> ->
+    meanwhile fixed
   - instead several things like machine configs should be placed into
     a separate and Dehn specific layer (meta-omnect-dehn/meta-karo-dehn?)
   - placement of various board specific Yocto paramters needs to be
@@ -75,13 +76,21 @@ DEHNdetect devices.
 
 ## Missing stuff and other ToDos
 
+<del>
 - handling of bootloader on different storage medium is incomplete
   - multiple images for swupdate needed
   - current abstraction of bootloader device (ubootblk-dev) needs to
     be reviewed
+</del>
+-> this was fixed by reconfiguring eMMC to boot from MMC user
+    partition; boot loader in MMC user partitions must start at offset
+    1KB and u-bot.bin's first 1KB need to be skipped; in U-Boot do:
+> mmc partconf 0 1 7 1
+
 - artefacts suitable to convert original DEHNdetect flash setup to
   omnect setup
 - define correct rootfs sizes
+<del>
 - swupdate handling misses several things:
   - correct sw-description file (currently completely lacking boot
     loader section)
@@ -91,9 +100,13 @@ DEHNdetect devices.
   - handling of U-Boot environment, also on bootloader medium
   - bootloader file is currently not generated for
     omnect-os-update-image.bb (catchword `SWUPDATE_IMAGES`)
+</del>
+-> fixed together with U-Boot in MMC user partition (see above)
+
 - out-of-tree kernel driver for FPGA needs to be checked whether it
   can be used with current kernel versions (probably not without
   modifications)
+<del>
 - performance of current kernel is much below that of Karo's reference
   kernel (which is based on 4.13); it needs to be checked what this
   gap is caused by: is it really only all of the virtualization stuff
@@ -103,6 +116,10 @@ DEHNdetect devices.
   which dropped from ~13MB/s in Karo's reference kernel to ~5MB/s in
   current kernel in an unstressed system i.e., with all cloud stuff
   torn down)
+</del>
+-> can be considered as solved with the right defconfig file as gained
+  by checking how phytec configures their i.MX6 based boards.
+
 - CI/CD is completely missing, of course, only a local concourse
   pipeline was used to ensure that images can be built which work to
   the extent reached with local dobi builds in dirty repositories
