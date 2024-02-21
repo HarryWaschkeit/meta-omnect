@@ -71,7 +71,7 @@ DEHNdetect devices.
   therefore initramfs module `imx-sdma` modprobes also imx-sdma in
   case probing of `imx_sdma` didn't cause kernel module `imx_sdma` to
   get loaded.
-- kernel configuration is currently handles as complete defconfig
+- kernel configuration is currently handled as complete defconfig
   which might be not the desired way
 
 ## Missing stuff and other ToDos
