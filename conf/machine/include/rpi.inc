@@ -40,4 +40,4 @@ OMNECT_BOOTLOADER="u-boot"
 # OMNECT_BOOTLOADER_CHECKSUM_EXPTECTED:pn-u-boot - build will fail, if the
 # computed checksum is different to this; set to <oldchecksum> when
 # OMNECT_BOOTLOADER_CHECKSUM_COMPATIBLE:pn-u-boot is set
-OMNECT_BOOTLOADER_CHECKSUM_EXPECTED:pn-u-boot = "7320f8af2c8e3769de2af4a8151b1f06b297beba134db93b0b3c2df9b50b9bcf"
+OMNECT_BOOTLOADER_CHECKSUM_EXPECTED:pn-u-boot = "04f767718a3e8f9fb79d8f6ee3bc1dae87379b01df1d788f46d59d623e3aa9bd"
