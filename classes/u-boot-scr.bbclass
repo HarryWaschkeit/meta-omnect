@@ -37,6 +37,9 @@ python create_boot_cmd () {
             if not fdt_load:
                 f.write("fdt addr ${%s}\n" % fdt_addr)
 
+            # allow for kernel bootcmd override in test boot script
+            f.write("setenv kernel_bootcmd %s\n" % (boot_cmd))
+
             # in the case of test boot script
             if omnect_boot_scr_test_cmds:
                 f.write("%s\n" % (omnect_boot_scr_test_cmds))
@@ -52,7 +55,7 @@ python create_boot_cmd () {
             f.write("setenv bootargs \"root=/dev/${devtype}blk${devnum}p${omnect_os_bootpart} ${bootargs} ${omnect-bootargs} ${extra-bootargs}\"\n")
 
             # boot
-            f.write("%s ${kernel_addr_r} ${ramdisk_addr_r} ${%s}\n" % (boot_cmd, fdt_addr))
+            f.write("${kernel_bootcmd} ${kernel_addr_r} ${ramdisk_addr_r} ${%s}\n" % (fdt_addr))
     except OSError:
         bb.fatal("Unable to open boot.cmd")
 }
