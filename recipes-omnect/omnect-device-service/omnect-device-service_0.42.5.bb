@@ -10,7 +10,7 @@ inherit cargo
 #SRC_URI += "git://github.com/omnect/omnect-device-service.git;protocol=https;nobranch=1;branch=main"
 SRC_URI += "git://github.com/HarryWaschkeit/omnect-device-service.git;protocol=https;nobranch=1;branch=hwt-refactor-reboot-reason-allow-arbitrary-extra-info-for-plain-reboots"
 #SRCREV = "762ae5f6786f747a34e0e8c3a781f5e56e947d5d"
-SRCREV = "8d8aa242c8bdb7e58a8c4f8728785c63f91b6eb2"
+SRCREV = "cbac2410fdd74f618081e35ac2b1bd8bf036afe5"
 S = "${WORKDIR}/git"
 CARGO_SRC_DIR = ""
 
