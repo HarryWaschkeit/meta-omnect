@@ -1,0 +1,73 @@
+From 93c9d3fa98302570bcc4ffd58b81e61128946c30 Mon Sep 17 00:00:00 2001
+From: Harry Waschkeit <44188360+HarryWaschkeit@users.noreply.github.com>
+Date: Thu, 16 Jul 2026 09:56:40 +0200
+Subject: [PATCH 1/2] net: fec: fix unbalanced clk disable when
+ register_netdev() fails
+
+fec_probe() explicitly disables the enet_out/ptp/ref/2x_txclk clock
+group via fec_enet_clk_enable(ndev, false) once initialization has
+completed, just before registering the netdev. However, if
+fec_enet_mii_init() or register_netdev() subsequently fails, the
+error unwind path falls through unconditionally to the
+failed_clk_ipg label, which calls fec_enet_clk_enable(ndev, false)
+a second time.
+
+This double-disables clocks that are already off, which is caught
+by the clk core and produces WARN_ON splats such as:
+
+  WARNING: CPU: 3 PID: 37 at drivers/clk/clk.c:1181 clk_core_disable+0x1b0/0x1e0
+  enet_phy already disabled
+  ...
+  WARNING: CPU: 3 PID: 37 at drivers/clk/clk.c:1040 clk_core_unprepare+0x20c/0x238
+  enet_phy already unprepared
+
+observed on a phyGATE-Tauri-L-iMX8MM when register_netdev() fails
+with -EEXIST because a competing PCIe NIC (igb) has already claimed
+the eth0 name that FEC1 is statically assigned via the 'ethernet0'
+alias.
+
+Track whether the clock group has already been suspended with a
+local 'clks_suspended' flag and skip the redundant disable call in
+the shared cleanup path if so.
+
+Signed-off-by: Copilot <223556219+Copilot@users.noreply.github.com>
+
+Co-authored-by: Copilot <223556219+Copilot@users.noreply.github.com>
+Signed-off-by: Harry Waschkeit <44188360+HarryWaschkeit@users.noreply.github.com>
+---
+ drivers/net/ethernet/freescale/fec_main.c | 5 ++++-
+ 1 file changed, 4 insertions(+), 1 deletion(-)
+
+diff --git a/drivers/net/ethernet/freescale/fec_main.c b/drivers/net/ethernet/freescale/fec_main.c
+index 53c028c72234..33c58e9dd5e4 100644
+--- a/drivers/net/ethernet/freescale/fec_main.c
++++ b/drivers/net/ethernet/freescale/fec_main.c
+@@ -4336,6 +4336,7 @@ fec_probe(struct platform_device *pdev)
+ 	int irq_cnt;
+ 	struct fec_devinfo *dev_info;
+ 	int eth_id;
++	bool clks_suspended = false;
+ 
+ 	fec_enet_get_queue_num(pdev, &num_tx_qs, &num_rx_qs);
+ 
+@@ -4548,6 +4549,7 @@ fec_probe(struct platform_device *pdev)
+ 	/* Carrier starts down, phylib will bring it up */
+ 	netif_carrier_off(ndev);
+ 	fec_enet_clk_enable(ndev, false);
++	clks_suspended = true;
+ 	pinctrl_pm_select_sleep_state(&pdev->dev);
+ 
+ 	ndev->max_mtu = PKT_MAXBUF_SIZE - ETH_HLEN - ETH_FCS_LEN;
+@@ -4590,7 +4592,8 @@ fec_probe(struct platform_device *pdev)
+ failed_clk_ahb:
+ 	clk_disable_unprepare(fep->clk_ipg);
+ failed_clk_ipg:
+-	fec_enet_clk_enable(ndev, false);
++	if (!clks_suspended)
++		fec_enet_clk_enable(ndev, false);
+ failed_clk:
+ 	release_bus_freq(BUS_FREQ_HIGH);
+ failed_rgmii_delay:
+-- 
+2.43.0
+

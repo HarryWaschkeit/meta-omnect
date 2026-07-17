@@ -1,0 +1,65 @@
+From 14649efc547d490ece28b787eb4043e130f6f440 Mon Sep 17 00:00:00 2001
+From: Harry Waschkeit <44188360+HarryWaschkeit@users.noreply.github.com>
+Date: Fri, 17 Jul 2026 10:59:26 +0200
+Subject: [PATCH 2/2] net: fec: defer probe instead of failing on netdev name
+ collision
+
+fec_probe() forces a fixed interface name (e.g. "eth0") via the
+'ethernet0' OF alias before calling register_netdev(). If another
+netdev has already registered with that literal name (e.g. an
+on-board PCIe NIC that won the boot-time race against FEC's own
+deferred probe retry), register_netdev() fails with -EEXIST and
+fec_probe() currently treats this as a permanent, non-recoverable
+error.
+
+Since -EEXIST is not automatically retried by the deferred probe
+core (only -EPROBE_DEFER is), this results in the FEC interface
+never coming up for the rest of that boot, matching reports of
+sporadic Ethernet probe failures after power-up on phyGATE-Tauri-L
+boards that also have a fixed on-board PCIe NIC (igb) contending
+for the same alias-derived name.
+
+Convert the -EEXIST case into -EPROBE_DEFER so FEC re-joins the
+deferred probe list and gets retried the next time any driver in
+the system successfully binds, giving it further chances to claim
+its fixed name once it frees up (e.g. once the competing interface
+is renamed away by udev/systemd-networkd).
+
+Signed-off-by: Copilot <223556219+Copilot@users.noreply.github.com>
+
+Co-authored-by: Copilot <223556219+Copilot@users.noreply.github.com>
+Signed-off-by: Harry Waschkeit <44188360+HarryWaschkeit@users.noreply.github.com>
+---
+ drivers/net/ethernet/freescale/fec_main.c | 15 ++++++++++++++-
+ 1 file changed, 14 insertions(+), 1 deletion(-)
+
+diff --git a/drivers/net/ethernet/freescale/fec_main.c b/drivers/net/ethernet/freescale/fec_main.c
+index 33c58e9dd5e4..ea46d010f4f2 100644
+--- a/drivers/net/ethernet/freescale/fec_main.c
++++ b/drivers/net/ethernet/freescale/fec_main.c
+@@ -4559,8 +4559,21 @@ fec_probe(struct platform_device *pdev)
+ 		sprintf(ndev->name, "eth%d", eth_id);
+ 
+ 	ret = register_netdev(ndev);
+-	if (ret)
++	if (ret) {
++		/*
++		 * If the OF alias forced this interface to a fixed name
++		 * (e.g. "eth0" via the 'ethernet0' alias) and that name is
++		 * already taken by another netdev that registered first
++		 * (e.g. an on-board PCIe NIC probed before us), defer our
++		 * probe instead of failing permanently. We'll get retried
++		 * automatically the next time any driver in the system
++		 * binds successfully, giving us another chance to claim
++		 * our fixed name once it becomes free.
++		 */
++		if (ret == -EEXIST && eth_id >= 0)
++			ret = -EPROBE_DEFER;
+ 		goto failed_register;
++	}
+ 
+ 	device_init_wakeup(&ndev->dev, fep->wol_flag &
+ 			   FEC_WOL_HAS_MAGIC_PACKET);
+-- 
+2.43.0
+
