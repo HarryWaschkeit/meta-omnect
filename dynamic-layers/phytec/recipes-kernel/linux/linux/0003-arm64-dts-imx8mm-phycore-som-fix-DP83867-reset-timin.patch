@@ -1,0 +1,75 @@
+From b410f27f8196f6c4d8bd1a7a2e9716c901b235ad Mon Sep 17 00:00:00 2001
+From: Harry Waschkeit <44188360+HarryWaschkeit@users.noreply.github.com>
+Date: Thu, 23 Jul 2026 15:11:43 +0200
+Subject: [PATCH 3/3] arm64: dts: imx8mm-phycore-som: fix DP83867 reset timing
+ on MDIO bus
+
+The reset-gpios/reset-assert-us/reset-deassert-us properties were set
+on the ethphy0 child node instead of the mdio bus node. These
+per-child properties are only parsed and applied by
+fwnode_mdiobus_phy_device_register() *after* the PHY has already
+answered a first raw MDIO ID read in get_phy_device(). This means the
+reset GPIO was never actually toggled before that first (and any
+retried) probe attempt, leaving PHY reset sequencing entirely
+dependent on whatever state the line happened to be in at power-up.
+
+Move reset-gpios to the mdio bus node instead, using the bus-level
+reset-delay-us/reset-post-delay-us properties. __mdiobus_register()
+asserts this GPIO, waits reset-delay-us, deasserts it and waits
+reset-post-delay-us *before* scanning the bus for PHYs, so the DP83867
+now reliably gets a real reset pulse followed by the ~200ms
+post-deassert stabilization time TI recommends, before Linux ever
+attempts to read its MDIO ID.
+
+This addresses intermittent 'MDIO device at address 0 is missing'
+probe failures observed on cold power-cycle, where the FEC ethernet
+device gets stuck in deferred-probe-pending indefinitely and the
+DP83867 never responds on the MDIO bus.
+
+Signed-off-by: Harry Waschkeit <44188360+HarryWaschkeit@users.noreply.github.com>
+---
+ .../dts/freescale/imx8mm-phycore-som.dtsi     | 21 ++++++++++++++++---
+ 1 file changed, 18 insertions(+), 3 deletions(-)
+
+diff --git a/arch/arm64/boot/dts/freescale/imx8mm-phycore-som.dtsi b/arch/arm64/boot/dts/freescale/imx8mm-phycore-som.dtsi
+index 32a515b4d829..609b369a24b3 100644
+--- a/arch/arm64/boot/dts/freescale/imx8mm-phycore-som.dtsi
++++ b/arch/arm64/boot/dts/freescale/imx8mm-phycore-som.dtsi
+@@ -67,6 +67,24 @@ mdio {
+ 		#address-cells = <1>;
+ 		#size-cells = <0>;
+ 
++		/*
++		 * The PHY reset must be driven at the MDIO bus level (not on
++		 * the phy child node below): __mdiobus_register() asserts
++		 * this GPIO, waits reset-delay-us, deasserts it and waits
++		 * reset-post-delay-us *before* scanning the bus for PHYs.
++		 * A reset-gpios property on the ethphy0 child node instead is
++		 * only parsed/applied *after* the PHY has already answered a
++		 * first raw MDIO ID read, so it can never help bring the PHY
++		 * out of reset for that very first (and any retried) probe.
++		 * Give the DP83867 the ~200ms TI recommends after reset
++		 * deassertion before the first MDIO access, to avoid
++		 * intermittent "MDIO device at address 0 is missing" probe
++		 * failures on cold power-up.
++		 */
++		reset-gpios = <&gpio1 7 GPIO_ACTIVE_HIGH>;
++		reset-delay-us = <1000>;
++		reset-post-delay-us = <200000>;
++
+ 		ethphy0: ethernet-phy@0 {
+ 			compatible = "ethernet-phy-ieee802.3-c22";
+ 			enet-phy-lane-no-swap;
+@@ -75,9 +93,6 @@ ethphy0: ethernet-phy@0 {
+ 			ti,rx-internal-delay = <DP83867_RGMIIDCTL_2_00_NS>;
+ 			ti,tx-internal-delay = <DP83867_RGMIIDCTL_2_00_NS>;
+ 			reg = <0>;
+-			reset-gpios = <&gpio1 7 GPIO_ACTIVE_HIGH>;
+-			reset-assert-us = <1000>;
+-			reset-deassert-us = <1000>;
+ 		};
+ 	};
+ };
+-- 
+2.43.0
+
